@@ -331,22 +331,42 @@ canvas {
   animation: fadeIn 260ms ease both;
 }
 
+.result-panel h2 {
+  font-size: clamp(1.8rem, 4.8vw, 3.6rem);
+  line-height: 1;
+}
+
 .score-row {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
   margin-bottom: 18px;
 }
 
-.score-row span,
+.score-row > span,
 .total-score {
-  padding: 10px 14px;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  min-width: 230px;
+  padding: 12px 18px;
   border: 1px solid rgba(184, 255, 92, 0.22);
   border-radius: 8px;
   color: var(--accent-2);
   font-weight: 900;
   background: rgba(184, 255, 92, 0.06);
+}
+
+.score-row > span > span {
+  color: var(--accent-2);
+  font-size: 1rem;
+}
+
+.score-row strong {
+  color: var(--accent-2);
+  font-size: 1.18rem;
 }
 
 .prompt-preview {

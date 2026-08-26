@@ -1649,8 +1649,8 @@ function drawBlocks(timestamp) {
     ctx.font = "900 10px ui-sans-serif, system-ui";
     ctx.fillText(getLocalizedLabel(block.category), x + 18, y + 23);
 
-    ctx.font = currentLanguage === "ko" ? "900 13px ui-sans-serif, system-ui" : "900 13px ui-sans-serif, system-ui";
-    wrapText(getBlockDisplay(block), x + 16, y + 48, block.width - 32, 15, "#061016", 3);
+    ctx.font = currentLanguage === "ko" ? "900 14px ui-sans-serif, system-ui" : "900 14px ui-sans-serif, system-ui";
+    wrapText(getBlockDisplay(block), x + 16, y + 48, block.width - 32, 16, "#061016", 3);
     ctx.restore();
   });
 }
