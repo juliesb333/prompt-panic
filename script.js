@@ -1081,9 +1081,10 @@ function startRound() {
   walkFrame = 0;
   lastWalkFrameTime = roundStartedAt;
   lastStepSoundTime = 0;
+  const startingPlatform = platforms[0];
   player = {
     x: CANVAS_WIDTH / 2 - 36,
-    y: START_Y,
+    y: startingPlatform.y - 72,
     width: 72,
     height: 72,
     vx: 92,
@@ -1174,13 +1175,7 @@ function applyPhysics(delta) {
     player.vx = -Math.abs(player.vx);
   }
   player.facing = player.vx >= 0 ? 1 : -1;
-
-  const floorY = START_Y + 40;
-  if (player.y + player.height >= floorY) {
-    player.y = floorY - player.height;
-    player.vy = 0;
-    player.grounded = true;
-  }
+  player.grounded = false;
 
   const targetCameraY = player.y - CANVAS_HEIGHT * 0.56;
   cameraY = Math.min(cameraY, targetCameraY);
@@ -1643,11 +1638,13 @@ function drawBlocks(timestamp) {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    ctx.fillStyle = "rgba(6, 10, 20, 0.9)";
-    ctx.fillRect(x + 12, y + 10, 76, 18);
-    ctx.fillStyle = "#eefbff";
     ctx.font = "900 10px ui-sans-serif, system-ui";
-    ctx.fillText(getLocalizedLabel(block.category), x + 18, y + 23);
+    const headerText = getLocalizedLabel(block.category);
+    const headerWidth = Math.min(block.width - 24, Math.ceil(ctx.measureText(headerText).width) + 18);
+    ctx.fillStyle = "rgba(6, 10, 20, 0.9)";
+    ctx.fillRect(x + 12, y + 10, headerWidth, 18);
+    ctx.fillStyle = "#eefbff";
+    ctx.fillText(headerText, x + 18, y + 23);
 
     ctx.font = currentLanguage === "ko" ? "900 14px ui-sans-serif, system-ui" : "900 14px ui-sans-serif, system-ui";
     wrapText(getBlockDisplay(block), x + 16, y + 48, block.width - 32, 16, "#061016", 3);
