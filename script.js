@@ -204,9 +204,9 @@ const uiText = {
     subtitle: "Collect good instructions. Dodge bad ones. Save the AI from your terrible prompting.",
     launchNote: "Press Start Game to begin.",
     howTitle: "HOW TO PLAY",
-    howTap: "Tap or click to jump upward",
+    howTap: "Tap the top of the game screen to jump",
     howSpace: "Press Space on desktop",
-    howArrows: "Use Left / Right Arrow on desktop",
+    howArrows: "Tap left/right sides or use Left / Right Arrow",
     howCollect: "Collect useful prompt blocks",
     howAvoid: "Avoid bad instructions",
     howGate: "Climb to the Prompt Gate",
@@ -234,6 +234,8 @@ const uiText = {
     playAgain: "Play Again",
     badInstruction: "BAD INSTRUCTION!",
     gateText: "RUN PROMPT ▶",
+    muteClock: "Mute clock sound",
+    unmuteClock: "Turn clock sound on",
     missingGood: "Missing enough useful prompt blocks",
     noBad: "No suspicious nonsense collected",
     emptyPrompt: "Your prompt is currently a dramatic silence.",
@@ -250,9 +252,9 @@ const uiText = {
     subtitle: "좋은 지시는 모으고, 이상한 지시는 피하세요. 엉망진창 프롬프트로부터 AI를 구해봅시다.",
     launchNote: "게임 시작 버튼을 눌러 시작하세요.",
     howTitle: "게임 방법",
-    howTap: "탭하거나 클릭해서 위로 점프",
+    howTap: "게임 화면 위쪽을 터치하면 점프",
     howSpace: "데스크톱에서는 Space로 점프",
-    howArrows: "데스크톱에서는 ← / → 로 좌우 이동",
+    howArrows: "왼쪽/오른쪽을 터치하거나 ← / → 로 이동",
     howCollect: "유용한 프롬프트 블록 모으기",
     howAvoid: "나쁜 지시는 피하기",
     howGate: "프롬프트 게이트까지 올라가기",
@@ -280,6 +282,8 @@ const uiText = {
     playAgain: "다시 하기",
     badInstruction: "나쁜 지시!",
     gateText: "프롬프트 실행 ▶",
+    muteClock: "시계 소리 끄기",
+    unmuteClock: "시계 소리 켜기",
     missingGood: "유용한 프롬프트 블록이 부족합니다",
     noBad: "수상한 지시를 하나도 모으지 않았습니다",
     emptyPrompt: "현재 프롬프트는 장엄한 침묵뿐입니다.",
@@ -830,6 +834,7 @@ const ui = {
   hudTimer: document.getElementById("hud-timer"),
   hudRoundScore: document.getElementById("hud-round-score"),
   hudTotalScore: document.getElementById("hud-total-score"),
+  clockToggle: document.getElementById("clock-toggle"),
   collectedEmpty: document.getElementById("collected-empty"),
   collectedList: document.getElementById("collected-list"),
   pickupFlash: document.getElementById("pickup-flash"),
@@ -895,6 +900,8 @@ let horizontalInput = 0;
 let currentLanguage = "en";
 let introCountdownValue = 2;
 let lastFinalRoundScore = 0;
+let clockMuted = false;
+let touchMovePointerId = null;
 
 ui.startGame.addEventListener("click", startGame);
 ui.startRound.addEventListener("click", startRound);
@@ -902,7 +909,12 @@ ui.nextMission.addEventListener("click", nextMission);
 ui.playAgain.addEventListener("click", restartGame);
 ui.langEn.addEventListener("click", () => setLanguage("en"));
 ui.langKo.addEventListener("click", () => setLanguage("ko"));
-ui.canvasWrap.addEventListener("pointerdown", handleTap);
+ui.clockToggle.addEventListener("click", toggleClockSound);
+ui.canvasWrap.addEventListener("pointerdown", handleCanvasPointerDown);
+ui.canvasWrap.addEventListener("pointermove", handleCanvasPointerMove);
+ui.canvasWrap.addEventListener("pointerup", stopTouchMove);
+ui.canvasWrap.addEventListener("pointercancel", stopTouchMove);
+ui.canvasWrap.addEventListener("pointerleave", stopTouchMove);
 canvas.addEventListener("touchmove", event => event.preventDefault(), { passive: false });
 
 window.addEventListener("keydown", event => {
@@ -1009,6 +1021,7 @@ function applyLanguage() {
   ui.finalScoreLabel.textContent = text.totalScore;
   ui.replayNote.textContent = text.replayNote;
   ui.playAgain.textContent = text.playAgain;
+  updateClockToggleButton();
 
   if (screens.mission.classList.contains("active") && selectedMissions.length) renderMissionIntro();
   if (screens.game.classList.contains("active") && player) updateHud();
@@ -1130,15 +1143,46 @@ function updateGame(timestamp) {
   animationId = requestAnimationFrame(updateGame);
 }
 
-function handleTap(event) {
+function handleCanvasPointerDown(event) {
   event.preventDefault();
   if (!player || roundFinished || !screens.game.classList.contains("active")) return;
 
+  try {
+    ui.canvasWrap.setPointerCapture?.(event.pointerId);
+  } catch (error) {
+    // Some browsers reject capture for synthetic or already-ended pointer events.
+  }
+  handleCanvasTouchZone(event);
+}
+
+function handleCanvasPointerMove(event) {
+  if (touchMovePointerId !== event.pointerId) return;
+
+  event.preventDefault();
+  handleCanvasTouchZone(event);
+}
+
+function handleCanvasTouchZone(event) {
   const rect = canvas.getBoundingClientRect();
   const tapX = (event.clientX - rect.left) / rect.width * CANVAS_WIDTH;
-  player.vx += tapX < CANVAS_WIDTH / 2 ? -36 : 36;
-  player.vx = clamp(player.vx, -150, 150);
-  tryJump();
+  const tapY = (event.clientY - rect.top) / rect.height * CANVAS_HEIGHT;
+
+  if (tapY < CANVAS_HEIGHT * 0.36) {
+    touchMovePointerId = null;
+    horizontalInput = 0;
+    tryJump();
+    return;
+  }
+
+  touchMovePointerId = event.pointerId;
+  horizontalInput = tapX < CANVAS_WIDTH / 2 ? -1 : 1;
+}
+
+function stopTouchMove(event) {
+  if (touchMovePointerId !== event.pointerId) return;
+
+  touchMovePointerId = null;
+  horizontalInput = 0;
 }
 
 function tryJump() {
@@ -1158,8 +1202,8 @@ function tryJump() {
 function applyPhysics(delta) {
   player.vy += 960 * delta;
   if (horizontalInput !== 0) {
-    player.vx += horizontalInput * 520 * delta;
-    player.vx = clamp(player.vx, -190, 190);
+    player.vx += horizontalInput * 780 * delta;
+    player.vx = clamp(player.vx, -260, 260);
   } else {
     const autoDrift = player.vx >= 0 ? 72 : -72;
     player.vx += (autoDrift - player.vx) * 1.8 * delta;
@@ -1215,17 +1259,66 @@ function prepareAudio() {
   Object.values(sounds).forEach(sound => sound.load());
   sounds.clock.loop = true;
   sounds.clock.playbackRate = 2.45;
+  unlockAudio();
+}
+
+function unlockAudio() {
+  Object.values(sounds).forEach(sound => {
+    const wasMuted = sound.muted;
+    sound.muted = true;
+    const playPromise = sound.play();
+
+    if (playPromise) {
+      playPromise
+        .then(() => {
+          sound.pause();
+          sound.currentTime = 0;
+          sound.muted = wasMuted;
+        })
+        .catch(() => {
+          sound.muted = wasMuted;
+        });
+      return;
+    }
+
+    sound.pause();
+    sound.currentTime = 0;
+    sound.muted = wasMuted;
+  });
 }
 
 function playJumpSound() {
   playSound(sounds.jump);
 }
 
+function toggleClockSound() {
+  clockMuted = !clockMuted;
+  sounds.clock.muted = clockMuted;
+  updateClockToggleButton();
+
+  if (clockMuted) {
+    stopClockSound();
+    return;
+  }
+
+  if (screens.game.classList.contains("active") && !roundFinished) {
+    startClockSound();
+  }
+}
+
+function updateClockToggleButton() {
+  const label = clockMuted ? getText().unmuteClock : getText().muteClock;
+  ui.clockToggle.classList.toggle("muted", clockMuted);
+  ui.clockToggle.setAttribute("aria-label", label);
+  ui.clockToggle.title = label;
+}
+
 function startClockSound() {
   const clock = sounds.clock;
-  if (!clock) return;
+  if (!clock || clockMuted) return;
 
   clock.loop = true;
+  clock.muted = false;
   clock.playbackRate = 2.45;
   clock.currentTime = 0;
   playSound(clock);
@@ -1567,13 +1660,22 @@ function renderGame(timestamp = 0) {
 
 function drawBackground() {
   const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
-  gradient.addColorStop(0, "#17264a");
-  gradient.addColorStop(0.55, "#101b36");
-  gradient.addColorStop(1, "#0d162c");
+  gradient.addColorStop(0, "#49b8ff");
+  gradient.addColorStop(0.55, "#6dcfff");
+  gradient.addColorStop(1, "#b8ecff");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  ctx.strokeStyle = "rgba(92, 227, 255, 0.12)";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
+  for (let x = 0; x < CANVAS_WIDTH; x += 12) {
+    for (let y = 120; y < CANVAS_HEIGHT; y += 12) {
+      if ((x + y + Math.floor(cameraY * 0.08)) % 48 === 0) {
+        ctx.fillRect(x, y, 2, 2);
+      }
+    }
+  }
+
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
   ctx.lineWidth = 1;
   for (let x = 0; x < CANVAS_WIDTH; x += 44) {
     ctx.beginPath();
@@ -1588,12 +1690,39 @@ function drawBackground() {
     ctx.stroke();
   }
 
-  ctx.fillStyle = "rgba(255, 137, 232, 0.16)";
-  for (let i = 0; i < 26; i++) {
-    const x = 36 + (i * 107) % (CANVAS_WIDTH - 80);
-    const y = ((i * 263 - cameraY * 0.45) % (CANVAS_HEIGHT + 90)) - 30;
-    ctx.fillRect(x, y, 34, 3);
-  }
+  drawCloud(-48, 48 - (cameraY * 0.12) % 520, 3);
+  drawCloud(372, 34 - (cameraY * 0.1) % 520, 2);
+  drawCloud(96, 152 - (cameraY * 0.16) % 560, 4);
+  drawCloud(520, 132 - (cameraY * 0.11) % 540, 2);
+  drawCloud(245, 315 - (cameraY * 0.13) % 580, 3);
+  drawCloud(410, 230 - (cameraY * 0.14) % 560, 3);
+  drawCloud(22, 420 - (cameraY * 0.18) % 600, 5);
+  drawCloud(460, 470 - (cameraY * 0.2) % 620, 4);
+}
+
+function drawCloud(x, y, scale) {
+  while (y < -100) y += CANVAS_HEIGHT + 140;
+  while (y > CANVAS_HEIGHT + 80) y -= CANVAS_HEIGHT + 140;
+
+  const unit = scale;
+  const blocks = [
+    [5, 4, 11, 4, "#e9f8ff"],
+    [2, 5, 20, 5, "#e9f8ff"],
+    [0, 6, 24, 4, "#d4edff"],
+    [4, 2, 5, 3, "#f7fdff"],
+    [9, 1, 5, 4, "#f7fdff"],
+    [14, 3, 6, 3, "#f7fdff"],
+    [6, 7, 15, 2, "#b9ddfa"],
+    [20, 7, 7, 2, "#b9ddfa"]
+  ];
+
+  ctx.save();
+  ctx.globalAlpha = 0.92;
+  blocks.forEach(([bx, by, bw, bh, color]) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(Math.round(x + bx * unit), Math.round(y + by * unit), bw * unit, bh * unit);
+  });
+  ctx.restore();
 }
 
 function drawPlatforms() {
