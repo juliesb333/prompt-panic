@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Panic: Jump the Nonsense</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23070810'/%3E%3Cpath d='M10 36 26 12h28L38 36h14L28 58l8-22z' fill='%2340f4ff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <div class="language-switcher" aria-label="Language selection">
+      <button id="lang-en" class="language-button active" type="button">EN</button>
+      <button id="lang-ko" class="language-button" type="button">한국어</button>
+    </div>
+
+    <section id="landing-screen" class="screen landing-screen active">
+      <div class="hero-panel">
+        <p id="landing-eyebrow" class="eyebrow">AI arcade training simulator</p>
+        <h1>Prompt Panic:<br><span>Jump the Nonsense</span></h1>
+        <p id="landing-subtitle" class="subtitle">Collect good instructions. Dodge bad ones. Save the AI from your terrible prompting.</p>
+        <p id="landing-launch-note" class="launch-note">Press Start Game to begin.</p>
+
+        <div class="how-to-play">
+          <h2 id="how-title">HOW TO PLAY</h2>
+          <ul>
+            <li id="how-tap">Tap or click to jump upward</li>
+            <li id="how-space">Press Space on desktop</li>
+            <li id="how-arrows">Use Left / Right Arrow on desktop</li>
+            <li id="how-collect">Collect useful prompt blocks</li>
+            <li id="how-avoid">Avoid bad instructions</li>
+            <li id="how-gate">Climb to the Prompt Gate</li>
+          </ul>
+        </div>
+
+        <button id="start-game" class="primary-button">Start Game</button>
+      </div>
+    </section>
+
+    <section id="mission-screen" class="screen mission-screen">
+      <div class="mission-panel">
+        <p id="intro-round" class="eyebrow">ROUND 1 / 5</p>
+        <h2 id="intro-title">Mission title</h2>
+        <p id="intro-description" class="mission-copy">Mission description</p>
+        <p id="intro-constraint" class="constraint-pill">Constraint</p>
+        <div id="ready-countdown" class="ready-countdown">Get ready...</div>
+        <button id="start-round" class="primary-button">Start Round</button>
+      </div>
+    </section>
+
+    <section id="game-screen" class="screen game-screen">
+      <div class="hud">
+        <div>
+          <p id="hud-round" class="eyebrow">ROUND 1 / 5</p>
+          <h2 id="hud-title">Mission title</h2>
+        </div>
+        <div class="hud-stat">
+          <span id="timer-label">Timer</span>
+          <strong id="hud-timer">20</strong>
+        </div>
+        <div class="hud-stat">
+          <span id="round-score-label">Round</span>
+          <strong id="hud-round-score">0</strong>
+        </div>
+        <div class="hud-stat">
+          <span id="total-score-label">Total</span>
+          <strong id="hud-total-score">0</strong>
+        </div>
+      </div>
+
+      <div id="canvas-wrap" class="canvas-wrap">
+        <canvas id="game-canvas" width="720" height="720" tabindex="0" aria-label="Prompt Panic vertical tap-to-jump game"></canvas>
+        <div id="pickup-flash" class="pickup-flash" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section id="result-screen" class="screen result-screen">
+      <div id="result-panel" class="result-panel">
+        <p id="result-eyebrow" class="eyebrow">AI RESPONSE LOG</p>
+        <h2><span id="quality-title">PROMPT QUALITY</span>: <span id="quality-score">0%</span></h2>
+        <div class="score-row">
+          <span><span id="result-round-label">Round Score</span>: <strong id="result-round-score">+0</strong></span>
+          <span><span id="result-total-label">Total Score</span>: <strong id="result-total-score">0</strong></span>
+        </div>
+        <section class="prompt-preview">
+          <h3 id="your-prompt-title">Your Prompt</h3>
+          <p id="result-prompt">No prompt blocks collected.</p>
+        </section>
+        <div id="feedback-list" class="feedback-list"></div>
+        <pre id="ai-response" class="ai-response"></pre>
+        <button id="next-mission" class="primary-button">Next Mission</button>
+      </div>
+    </section>
+
+    <section id="final-screen" class="screen final-screen">
+      <div class="final-panel">
+        <p id="final-eyebrow" class="eyebrow">SIMULATION FINISHED</p>
+        <h2 id="final-title">MISSION COMPLETE</h2>
+        <p class="total-score"><span id="final-score-label">Total Score</span>: <span id="final-score">0</span></p>
+        <h3 id="rank-title">AI DISASTER</h3>
+        <p id="rank-message" class="rank-message">The AI followed orders. That was the problem.</p>
+        <p id="replay-note" class="replay-note">New missions appear every game.</p>
+        <button id="play-again" class="primary-button">Play Again</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
