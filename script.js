@@ -166,7 +166,7 @@ const CANVAS_HEIGHT = 720;
 const WORLD_HEIGHT = 3300;
 const GATE_Y = 120;
 const START_Y = WORLD_HEIGHT - 220;
-const ROUND_SECONDS = 25;
+const ROUND_SECONDS = 15;
 const TOTAL_ROUNDS = 5;
 const labels = ["ROLE", "CONTEXT", "CONSTRAINT", "FORMAT", "TONE", "DETAIL"];
 const displayOverrides = {
@@ -865,8 +865,9 @@ const sprites = {
   jump: loadSprite("assets/player_jump.png")
 };
 const sounds = {
-  walk: loadSound("assets/walk.mp3", 0.18),
-  jump: loadSound("assets/jump.mp3", 0.46)
+  walk: loadSound("assets/walk.mp3", 0.08),
+  jump: loadSound("assets/jump.mp3", 0.46),
+  clock: loadSound("assets/clock.mp3", 0.28)
 };
 
 let selectedMissions = [];
@@ -1081,6 +1082,7 @@ function startRound() {
   walkFrame = 0;
   lastWalkFrameTime = roundStartedAt;
   lastStepSoundTime = 0;
+  startClockSound();
   const startingPlatform = platforms[0];
   player = {
     x: CANVAS_WIDTH / 2 - 36,
@@ -1211,10 +1213,34 @@ function updateWalkAnimation(timestamp) {
 
 function prepareAudio() {
   Object.values(sounds).forEach(sound => sound.load());
+  sounds.clock.loop = true;
+  sounds.clock.playbackRate = 2.45;
 }
 
 function playJumpSound() {
   playSound(sounds.jump);
+}
+
+function startClockSound() {
+  const clock = sounds.clock;
+  if (!clock) return;
+
+  clock.loop = true;
+  clock.playbackRate = 2.45;
+  clock.currentTime = 0;
+  playSound(clock);
+}
+
+function stopClockSound() {
+  const clock = sounds.clock;
+  if (!clock) return;
+
+  try {
+    clock.pause();
+    clock.currentTime = 0;
+  } catch (error) {
+    // Audio can fail silently on some browsers without affecting gameplay.
+  }
 }
 
 function playSound(sound) {
@@ -1398,6 +1424,7 @@ function finishRound(options = {}) {
 
   roundFinished = true;
   cancelAnimationFrame(animationId);
+  stopClockSound();
   const finalRoundScore = Math.max(0, roundScore + timeRemaining * 10);
   lastFinalRoundScore = finalRoundScore;
   totalScore += finalRoundScore;
