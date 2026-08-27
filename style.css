@@ -231,15 +231,16 @@ h3 {
 }
 
 .game-screen {
-  width: min(880px, 100%);
+  width: min(980px, 100%);
   animation: fadeIn 240ms ease both;
 }
 
 .hud {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) 128px;
+  gap: 10px;
   align-items: stretch;
+  width: min(820px, calc(100vw - 28px));
   margin: 0 auto 10px;
 }
 
@@ -258,7 +259,6 @@ h3 {
 }
 
 .hud > div:first-child {
-  grid-column: 1 / -1;
   padding-right: 58px;
 }
 
@@ -343,15 +343,15 @@ h3 {
 
 .hud-stat strong {
   color: var(--accent);
-  font-size: 1.42rem;
+  font-size: 1.58rem;
   line-height: 1.1;
 }
 
 .canvas-wrap {
   position: relative;
   overflow: hidden;
-  width: min(720px, calc(100vw - 28px), calc(100vh - 170px));
-  height: min(720px, calc(100vw - 28px), calc(100vh - 170px));
+  width: min(820px, calc(100vw - 28px), calc(100svh - 150px));
+  height: min(820px, calc(100vw - 28px), calc(100svh - 150px));
   aspect-ratio: 1 / 1;
   margin: 0 auto;
   border: 1px solid rgba(68, 244, 255, 0.24);
@@ -537,11 +537,12 @@ canvas {
   }
 
   .hud {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) 110px;
   }
 
-  .hud > div:first-child {
-    grid-column: 1 / -1;
+  .canvas-wrap {
+    width: min(calc(100vw - 28px), calc(100svh - 150px));
+    height: min(calc(100vw - 28px), calc(100svh - 150px));
   }
 }
 
@@ -559,6 +560,14 @@ canvas {
 
   .hud-stat strong {
     font-size: 1.16rem;
+  }
+
+  .hud {
+    grid-template-columns: 1fr;
+  }
+
+  .hud > div:first-child {
+    padding-right: 54px;
   }
 
 }

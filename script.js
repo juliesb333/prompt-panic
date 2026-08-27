@@ -832,8 +832,6 @@ const ui = {
   hudRound: document.getElementById("hud-round"),
   hudTitle: document.getElementById("hud-title"),
   hudTimer: document.getElementById("hud-timer"),
-  hudRoundScore: document.getElementById("hud-round-score"),
-  hudTotalScore: document.getElementById("hud-total-score"),
   clockToggle: document.getElementById("clock-toggle"),
   collectedEmpty: document.getElementById("collected-empty"),
   collectedList: document.getElementById("collected-list"),
@@ -1258,7 +1256,7 @@ function updateWalkAnimation(timestamp) {
 function prepareAudio() {
   Object.values(sounds).forEach(sound => sound.load());
   sounds.clock.loop = true;
-  sounds.clock.playbackRate = 2.45;
+  sounds.clock.playbackRate = 2.05;
   unlockAudio();
 }
 
@@ -1319,7 +1317,7 @@ function startClockSound() {
 
   clock.loop = true;
   clock.muted = false;
-  clock.playbackRate = 2.45;
+  clock.playbackRate = 2.05;
   clock.currentTime = 0;
   playSound(clock);
 }
@@ -1602,8 +1600,6 @@ function updateHud() {
   ui.hudRound.textContent = `${getText().round} ${roundIndex + 1} / ${TOTAL_ROUNDS}`;
   ui.hudTitle.textContent = translate(getCurrentMission().title);
   ui.hudTimer.textContent = timeRemaining;
-  ui.hudRoundScore.textContent = `${roundScore} · ${calculatePromptQuality()}%`;
-  ui.hudTotalScore.textContent = totalScore;
 }
 
 function updateCollectedPanel() {
@@ -1665,30 +1661,6 @@ function drawBackground() {
   gradient.addColorStop(1, "#b8ecff");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-  ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
-  for (let x = 0; x < CANVAS_WIDTH; x += 12) {
-    for (let y = 120; y < CANVAS_HEIGHT; y += 12) {
-      if ((x + y + Math.floor(cameraY * 0.08)) % 48 === 0) {
-        ctx.fillRect(x, y, 2, 2);
-      }
-    }
-  }
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
-  ctx.lineWidth = 1;
-  for (let x = 0; x < CANVAS_WIDTH; x += 44) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, CANVAS_HEIGHT);
-    ctx.stroke();
-  }
-  for (let y = -(cameraY % 44); y < CANVAS_HEIGHT; y += 44) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(CANVAS_WIDTH, y);
-    ctx.stroke();
-  }
 
   drawCloud(-48, 48 - (cameraY * 0.12) % 520, 3);
   drawCloud(372, 34 - (cameraY * 0.1) % 520, 2);
