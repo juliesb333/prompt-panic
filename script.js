@@ -162,7 +162,7 @@ const missionPool = [
 ];
 
 const CANVAS_WIDTH = 720;
-const CANVAS_HEIGHT = 720;
+let CANVAS_HEIGHT = 720;
 const WORLD_HEIGHT = 3300;
 const GATE_Y = 120;
 const START_Y = WORLD_HEIGHT - 220;
@@ -919,6 +919,7 @@ ui.canvasWrap.addEventListener("pointerup", stopTouchMove);
 ui.canvasWrap.addEventListener("pointercancel", stopTouchMove);
 ui.canvasWrap.addEventListener("pointerleave", stopTouchMove);
 canvas.addEventListener("touchmove", event => event.preventDefault(), { passive: false });
+window.addEventListener("resize", syncCanvasToLayout);
 
 window.addEventListener("keydown", event => {
   if (["Space", "ArrowLeft", "ArrowRight"].includes(event.code)) {
@@ -1082,6 +1083,8 @@ function renderMissionIntro() {
 function startRound() {
   clearTimeout(introTimer);
   clearInterval(introTimer);
+  showScreen("game");
+  syncCanvasToLayout();
   ui.startRound.disabled = true;
   roundScore = 0;
   timeRemaining = ROUND_SECONDS;
@@ -1113,10 +1116,26 @@ function startRound() {
   promptBlocks = createPromptBlocks(getCurrentMission());
   updateCollectedPanel();
   updateHud();
-  showScreen("game");
   canvas.focus();
   renderGame(roundStartedAt);
   animationId = requestAnimationFrame(updateGame);
+}
+
+function syncCanvasToLayout() {
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+
+  const nextHeight = clamp(Math.round(CANVAS_WIDTH * (rect.height / rect.width)), 720, 920);
+  if (canvas.width === CANVAS_WIDTH && canvas.height === nextHeight) return;
+
+  canvas.width = CANVAS_WIDTH;
+  canvas.height = nextHeight;
+  CANVAS_HEIGHT = nextHeight;
+  ctx.imageSmoothingEnabled = false;
+
+  if (player) {
+    cameraY = clamp(cameraY, 0, START_Y - CANVAS_HEIGHT + 120);
+  }
 }
 
 function updateGame(timestamp) {
@@ -1665,6 +1684,7 @@ function createJumpBurst() {
 }
 
 function renderGame(timestamp = 0) {
+  syncCanvasToLayout();
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   drawBackground();

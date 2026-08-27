@@ -711,9 +711,9 @@ canvas {
 
   .canvas-wrap {
     width: min(100%, calc(100vw - 20px));
-    height: calc(100dvh - 184px);
+    height: min(calc(100dvh - 184px), calc((100vw - 20px) * 1.25));
     min-height: 0;
-    aspect-ratio: auto;
+    aspect-ratio: 4 / 5;
   }
 
   canvas {
