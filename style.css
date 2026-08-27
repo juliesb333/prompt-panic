@@ -382,9 +382,9 @@ h3 {
   flex: 0 1 auto;
   position: relative;
   overflow: hidden;
-  width: min(540px, calc(100vw - 28px), calc((100dvh - 150px) * 0.5625));
+  width: min(840px, calc(100vw - 28px), calc((100dvh - 150px) * 1.1667));
   height: auto;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 7 / 6;
   margin: 0 auto;
   border: 1px solid rgba(68, 244, 255, 0.24);
   border-radius: 8px;
@@ -623,7 +623,7 @@ canvas {
   }
 
   .canvas-wrap {
-    width: min(calc(100vw - 28px), calc((100dvh - 144px) * 0.5625));
+    width: min(calc(100vw - 28px), calc((100dvh - 144px) * 1.1667));
     height: auto;
   }
 
