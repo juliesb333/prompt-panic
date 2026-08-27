@@ -167,6 +167,7 @@ const WORLD_HEIGHT = 3300;
 const GATE_Y = 120;
 const START_Y = WORLD_HEIGHT - 220;
 const ROUND_SECONDS = 15;
+const MISSED_GATE_PENALTY = 300;
 const TOTAL_ROUNDS = 5;
 const labels = ["ROLE", "CONTEXT", "CONSTRAINT", "FORMAT", "TONE", "DETAIL"];
 const displayOverrides = {
@@ -238,6 +239,9 @@ const uiText = {
     unmuteClock: "Turn clock sound on",
     missingGood: "Missing enough useful prompt blocks",
     noBad: "No suspicious nonsense collected",
+    reachedGate: "Prompt Gate reached",
+    missedGate: "Missed the Prompt Gate",
+    penalty: "penalty",
     emptyPrompt: "Your prompt is currently a dramatic silence.",
     ranks: [
       { max: 1200, title: "AI DISASTER", message: "The AI followed orders. That was the problem." },
@@ -286,6 +290,9 @@ const uiText = {
     unmuteClock: "시계 소리 켜기",
     missingGood: "유용한 프롬프트 블록이 부족합니다",
     noBad: "수상한 지시를 하나도 모으지 않았습니다",
+    reachedGate: "프롬프트 게이트에 도착했습니다",
+    missedGate: "프롬프트 게이트 미도달",
+    penalty: "페널티",
     emptyPrompt: "현재 프롬프트는 장엄한 침묵뿐입니다.",
     ranks: [
       { max: 1200, title: "AI 대참사", message: "AI는 지시를 잘 따랐습니다. 바로 그게 문제였죠." },
@@ -827,8 +834,6 @@ const ui = {
   introConstraint: document.getElementById("intro-constraint"),
   readyCountdown: document.getElementById("ready-countdown"),
   timerLabel: document.getElementById("timer-label"),
-  roundScoreLabel: document.getElementById("round-score-label"),
-  totalScoreLabel: document.getElementById("total-score-label"),
   hudRound: document.getElementById("hud-round"),
   hudTitle: document.getElementById("hud-title"),
   hudTimer: document.getElementById("hud-timer"),
@@ -1007,8 +1012,6 @@ function applyLanguage() {
   ui.startGame.textContent = text.startGame;
   ui.startRound.textContent = text.startRound;
   ui.timerLabel.textContent = text.timer;
-  ui.roundScoreLabel.textContent = text.roundScore;
-  ui.totalScoreLabel.textContent = text.total;
   ui.resultEyebrow.textContent = text.responseLog;
   ui.qualityTitle.textContent = text.quality;
   ui.resultRoundLabel.textContent = text.resultRound;
@@ -1134,7 +1137,7 @@ function updateGame(timestamp) {
   renderGame(timestamp);
 
   if (timeRemaining <= 0) {
-    finishRound();
+    finishRound({ reachedGate: false });
     return;
   }
 
@@ -1500,7 +1503,7 @@ function showPickupEffect(isGood) {
 function checkPromptGate() {
   const gate = { x: 160, y: GATE_Y, width: 400, height: 140 };
   if (rectanglesOverlap(getPlayerHitbox(), gate)) {
-    finishRound();
+    finishRound({ reachedGate: true });
   }
 }
 
@@ -1516,7 +1519,9 @@ function finishRound(options = {}) {
   roundFinished = true;
   cancelAnimationFrame(animationId);
   stopClockSound();
-  const finalRoundScore = Math.max(0, roundScore + timeRemaining * 10);
+  const reachedGate = Boolean(options.reachedGate);
+  const gatePenalty = reachedGate ? 0 : MISSED_GATE_PENALTY;
+  const finalRoundScore = Math.max(0, roundScore + timeRemaining * 10 - gatePenalty);
   lastFinalRoundScore = finalRoundScore;
   totalScore += finalRoundScore;
 
@@ -1525,7 +1530,7 @@ function finishRound(options = {}) {
     return;
   }
 
-  showRoundResults(finalRoundScore);
+  showRoundResults(finalRoundScore, { reachedGate, gatePenalty });
 }
 
 function calculatePromptQuality() {
@@ -1534,11 +1539,12 @@ function calculatePromptQuality() {
   return clamp(Math.round((correctCount / 4) * 100 - incorrectCount * 15), 0, 100);
 }
 
-function showRoundResults(finalRoundScore) {
+function showRoundResults(finalRoundScore, resultMeta = {}) {
   const current = getCurrentMission();
   const correctCount = collectedBlocks.filter(block => block.correct).length;
   const incorrectCount = collectedBlocks.filter(block => !block.correct).length;
-  const success = correctCount >= 3 && incorrectCount <= 1;
+  const reachedGate = Boolean(resultMeta.reachedGate);
+  const success = reachedGate && correctCount >= 3 && incorrectCount <= 1;
   const quality = calculatePromptQuality();
 
   ui.qualityScore.textContent = `${quality}%`;
@@ -1549,7 +1555,7 @@ function showRoundResults(finalRoundScore) {
   ui.nextMission.textContent = roundIndex === TOTAL_ROUNDS - 1 ? getText().showFinal : getText().nextMission;
 
   ui.feedbackList.innerHTML = "";
-  buildFeedbackList().forEach(line => {
+  buildFeedbackList(resultMeta).forEach(line => {
     const item = document.createElement("div");
     item.className = "feedback-line";
     item.textContent = line;
@@ -1560,7 +1566,7 @@ function showRoundResults(finalRoundScore) {
   showScreen("result");
 }
 
-function buildFeedbackList() {
+function buildFeedbackList(resultMeta = {}) {
   const lines = [];
   const collectedCorrect = collectedBlocks.filter(block => block.correct);
   const collectedBad = collectedBlocks.filter(block => !block.correct);
@@ -1570,6 +1576,11 @@ function buildFeedbackList() {
 
   if (collectedCorrect.length < 3) lines.push(`❌ ${getText().missingGood}`);
   if (collectedBad.length === 0) lines.push(`✅ ${getText().noBad}`);
+  if (resultMeta.reachedGate) {
+    lines.push(`✅ ${getText().reachedGate}`);
+  } else if (resultMeta.gatePenalty) {
+    lines.push(`❌ ${getText().missedGate}: -${resultMeta.gatePenalty} ${getText().penalty}`);
+  }
   if (!collectedBlocks.length) lines.push(`❌ ${getText().emptyPrompt}`);
 
   return lines;
