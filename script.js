@@ -161,8 +161,8 @@ const missionPool = [
     "Please review Appendix C: Cathode Optimization and Electrolyte Conductivity.")
 ];
 
-const CANVAS_WIDTH = 720;
-let CANVAS_HEIGHT = 720;
+const CANVAS_WIDTH = 540;
+const CANVAS_HEIGHT = 960;
 const WORLD_HEIGHT = 3300;
 const GATE_Y = 120;
 const START_Y = WORLD_HEIGHT - 220;
@@ -919,6 +919,10 @@ ui.canvasWrap.addEventListener("pointerup", stopTouchMove);
 ui.canvasWrap.addEventListener("pointercancel", stopTouchMove);
 ui.canvasWrap.addEventListener("pointerleave", stopTouchMove);
 canvas.addEventListener("touchmove", event => event.preventDefault(), { passive: false });
+ui.canvasWrap.addEventListener("touchstart", event => event.preventDefault(), { passive: false });
+ui.canvasWrap.addEventListener("touchmove", event => event.preventDefault(), { passive: false });
+canvas.addEventListener("contextmenu", event => event.preventDefault());
+document.addEventListener("selectstart", event => event.preventDefault());
 window.addEventListener("resize", syncCanvasToLayout);
 
 window.addEventListener("keydown", event => {
@@ -1122,15 +1126,10 @@ function startRound() {
 }
 
 function syncCanvasToLayout() {
-  const rect = canvas.getBoundingClientRect();
-  if (!rect.width || !rect.height) return;
-
-  const nextHeight = clamp(Math.round(CANVAS_WIDTH * (rect.height / rect.width)), 720, 920);
-  if (canvas.width === CANVAS_WIDTH && canvas.height === nextHeight) return;
+  if (canvas.width === CANVAS_WIDTH && canvas.height === CANVAS_HEIGHT) return;
 
   canvas.width = CANVAS_WIDTH;
-  canvas.height = nextHeight;
-  CANVAS_HEIGHT = nextHeight;
+  canvas.height = CANVAS_HEIGHT;
   ctx.imageSmoothingEnabled = false;
 
   if (player) {
@@ -1385,13 +1384,13 @@ function createPromptBlocks(current) {
   ].sort(() => Math.random() - 0.5);
 
   const yPositions = [2895, 2595, 2075, 1575, 1085, 575].sort(() => Math.random() - 0.5);
-  const xPositions = [36, 430, 90, 388, 232, 300].sort(() => Math.random() - 0.5);
+  const xPositions = [24, 265, 68, 240, 145, 190].sort(() => Math.random() - 0.5);
 
   return blockData.map((block, index) => ({
     ...block,
     x: xPositions[index],
     y: yPositions[index],
-    width: 250,
+    width: 230,
     height: 92,
     collected: false,
     bobOffset: Math.random() * Math.PI * 2
@@ -1400,19 +1399,19 @@ function createPromptBlocks(current) {
 
 function createPlatforms() {
   const platformSpecs = [
-    [230, START_Y + 64, 260],
-    [56, 3000, 250],
-    [410, 2720, 220],
-    [140, 2490, 260],
-    [380, 2225, 250],
-    [70, 1960, 265],
-    [390, 1700, 240],
-    [150, 1440, 280],
-    [430, 1180, 225],
-    [86, 930, 265],
-    [360, 690, 260],
-    [155, 450, 280],
-    [130, 245, 460]
+    [160, START_Y + 64, 250],
+    [42, 3000, 230],
+    [285, 2720, 205],
+    [106, 2490, 240],
+    [265, 2225, 225],
+    [52, 1960, 245],
+    [280, 1700, 220],
+    [112, 1440, 255],
+    [300, 1180, 205],
+    [64, 930, 245],
+    [270, 690, 230],
+    [112, 450, 260],
+    [70, 245, 400]
   ];
 
   return platformSpecs.map(([x, y, width]) => ({
@@ -1531,7 +1530,7 @@ function showPickupEffect(isGood) {
 }
 
 function checkPromptGate() {
-  const gate = { x: 160, y: GATE_Y, width: 400, height: 140 };
+  const gate = { x: 70, y: GATE_Y, width: 400, height: 140 };
   if (rectanglesOverlap(getPlayerHitbox(), gate)) {
     finishRound({ reachedGate: true });
   }
@@ -1765,7 +1764,7 @@ function drawPlatforms() {
 }
 
 function drawPromptGate(timestamp) {
-  const gateX = 160;
+  const gateX = 70;
   const gateY = GATE_Y - cameraY;
   if (gateY > CANVAS_HEIGHT + 180 || gateY < -220) return;
 

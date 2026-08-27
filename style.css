@@ -15,12 +15,14 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -28,6 +30,9 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
   color: var(--text);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background:
@@ -377,26 +382,36 @@ h3 {
   flex: 0 1 auto;
   position: relative;
   overflow: hidden;
-  width: min(820px, calc(100vw - 28px), calc(100svh - 150px));
-  height: min(820px, calc(100vw - 28px), calc(100svh - 150px));
-  aspect-ratio: 1 / 1;
+  width: min(540px, calc(100vw - 28px), calc((100dvh - 150px) * 0.5625));
+  height: auto;
+  aspect-ratio: 9 / 16;
   margin: 0 auto;
   border: 1px solid rgba(68, 244, 255, 0.24);
   border-radius: 8px;
   background: #101a33;
   box-shadow: var(--shadow);
   touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.game-area,
+.game-area canvas,
+canvas {
+  display: block;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
   user-select: none;
 }
 
 canvas {
-  display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  touch-action: none;
 }
 
 .pickup-flash {
@@ -593,7 +608,14 @@ canvas {
 
 @media (max-width: 820px) {
   .app {
-    padding: 54px 14px 14px;
+    padding: 20px 14px 14px;
+  }
+
+  .language-switcher {
+    top: 8px;
+    right: 8px;
+    transform: scale(0.86);
+    transform-origin: top right;
   }
 
   .hud {
@@ -601,8 +623,8 @@ canvas {
   }
 
   .canvas-wrap {
-    width: min(calc(100vw - 28px), calc(100dvh - 144px));
-    height: min(calc(100vw - 28px), calc(100dvh - 144px));
+    width: min(calc(100vw - 28px), calc((100dvh - 144px) * 0.5625));
+    height: auto;
   }
 
   .result-panel {
@@ -626,14 +648,16 @@ canvas {
 
 @media (max-width: 560px) {
   .app {
-    padding: 76px 10px 10px;
+    padding: 50px 10px 10px;
   }
 
   .language-switcher {
-    top: 10px;
-    right: 10px;
+    top: 6px;
+    right: 6px;
     padding: 5px;
     gap: 4px;
+    transform: scale(0.82);
+    transform-origin: top right;
   }
 
   .language-button {
@@ -652,6 +676,10 @@ canvas {
 
   .game-screen {
     width: 100%;
+  }
+
+  .game-screen.active {
+    justify-content: flex-start;
   }
 
   .hud {
@@ -710,14 +738,10 @@ canvas {
   }
 
   .canvas-wrap {
-    width: min(100%, calc(100vw - 20px));
-    height: min(calc(100dvh - 184px), calc((100vw - 20px) * 1.25));
+    width: min(100%, calc(100vw - 20px), calc((100dvh - 150px) * 0.5625));
+    height: auto;
     min-height: 0;
-    aspect-ratio: 4 / 5;
-  }
-
-  canvas {
-    object-fit: fill;
+    aspect-ratio: 9 / 16;
   }
 
   .result-screen.active,
