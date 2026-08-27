@@ -1177,6 +1177,7 @@ function handleCanvasTouchZone(event) {
 
   touchMovePointerId = event.pointerId;
   horizontalInput = tapX < CANVAS_WIDTH / 2 ? -1 : 1;
+  playTouchWalkSound();
 }
 
 function stopTouchMove(event) {
@@ -1290,6 +1291,16 @@ function unlockAudio() {
 
 function playJumpSound() {
   playSound(sounds.jump);
+}
+
+function playTouchWalkSound() {
+  if (!player || !player.grounded) return;
+
+  const now = performance.now();
+  if (now - lastStepSoundTime < 280) return;
+
+  playSound(sounds.walk);
+  lastStepSoundTime = now;
 }
 
 function toggleClockSound() {

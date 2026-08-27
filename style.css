@@ -637,4 +637,8 @@ canvas {
     min-height: min(480px, calc(100svh - 230px));
     aspect-ratio: auto;
   }
+
+  canvas {
+    object-fit: fill;
+  }
 }
